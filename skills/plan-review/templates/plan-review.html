@@ -403,7 +403,7 @@
       <section id="s5" class="pr-section">
         <h2>5. Change-by-change</h2>
 
-        <details class="pr-change" data-ux="true" open>
+        <details class="pr-change" data-ux="true" data-risk="false" open>
           <summary>
             <span class="pr-change-id">#1</span>
             <span class="pr-change-file">app/auth/login.tsx</span>
@@ -463,7 +463,7 @@
           </div>
         </details>
 
-        <details class="pr-change" data-ux="false">
+        <details class="pr-change" data-ux="false" data-risk="true">
           <summary>
             <span class="pr-change-id">#2</span>
             <span class="pr-change-file">middleware/jwt.ts</span>
@@ -566,6 +566,9 @@
     document.querySelectorAll('[data-view-btn]').forEach(b => {
       b.classList.toggle('pr-view-btn--active', b.dataset.viewBtn === v);
     });
+    document.querySelectorAll('[data-view-content]').forEach(el => {
+      el.hidden = el.dataset.viewContent !== v;
+    });
     localStorage.setItem('plan-review.view', v);
   };
   document.querySelectorAll('[data-view-btn]').forEach(b => {
@@ -589,9 +592,12 @@
   // Filters
   document.querySelectorAll('[data-filter]').forEach(cb => {
     cb.addEventListener('change', () => {
-      const ux = document.querySelector('[data-filter="ux-only"]').checked;
+      const uxOnly   = document.querySelector('[data-filter="ux-only"]').checked;
+      const riskOnly = document.querySelector('[data-filter="risk-only"]').checked;
       document.querySelectorAll('.pr-change').forEach(c => {
-        c.style.display = (ux && c.dataset.ux !== 'true') ? 'none' : '';
+        const passUx   = !uxOnly   || c.dataset.ux   === 'true';
+        const passRisk = !riskOnly || c.dataset.risk  === 'true';
+        c.style.display = (passUx && passRisk) ? '' : 'none';
       });
     });
   });

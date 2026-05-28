@@ -147,7 +147,7 @@ Wrap each Mermaid diagram in `.pr-mermaid-wrap` per `mermaid-theming.md`. Sectio
 <section id="s5" class="pr-section">
   <h2>Change-by-change</h2>
   {{#each change}}
-  <details class="pr-change" data-ux="{{is_ux}}" open>
+  <details class="pr-change" data-ux="{{is_ux}}" data-risk="{{has_risk}}" open>
     <summary>
       <span class="pr-change-id">{{n}}</span>
       <span class="pr-change-file">{{file}}</span>
@@ -258,6 +258,6 @@ PE toggle toggles `<html data-plain-english>`. CSS hides callouts when off:
 html[data-plain-english="off"] .pr-pe-callout { display: none; }
 ```
 
-Filters use the same attribute pattern. `ux-only` adds `data-filter-ux="1"` to `<main>`; CSS hides `.pr-change:not([data-ux="true"])`.
+Filters use JS to toggle visibility on `.pr-change` elements based on their `data-ux` and `data-risk` attributes. Set `data-risk="true"` on any change that has a `⚑ missing rationale` flag, a high/medium severity risk card, or a discrepancy between plan claims and actual code. Both filters compose: a change must pass both active filters to remain visible.
 
 Mermaid zoom controls per `mermaid-theming.md`.

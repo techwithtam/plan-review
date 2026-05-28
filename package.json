@@ -1,0 +1,7 @@
+{
+  "name": "plan-review",
+  "version": "0.1.0",
+  "description": "Claude Code plugin and skill for visual plan reviews with ASCII UI mockups and Plain English translation.",
+  "license": "MIT",
+  "repository": "https://github.com/tamnguyenvan/plan-review"
+}

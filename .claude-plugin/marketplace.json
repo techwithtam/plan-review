@@ -1,0 +1,11 @@
+{
+  "name": "plan-review",
+  "owner": "tamnguyenvan",
+  "plugins": [
+    {
+      "name": "plan-review",
+      "source": ".",
+      "description": "Visual HTML plan reviews with ASCII UI mockups and a Plain English translation layer."
+    }
+  ]
+}

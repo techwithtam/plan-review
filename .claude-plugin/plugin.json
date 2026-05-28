@@ -1,0 +1,21 @@
+{
+  "name": "plan-review",
+  "description": "Visual HTML plan reviews for Claude Code. Cross-references a proposed plan against the real codebase, surfaces risks, gaps, and ripples. Includes ASCII UI mockups for UX changes and a Plain English layer that translates the technical jargon.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Tam Nguyen"
+  },
+  "homepage": "https://github.com/tamnguyenvan/plan-review",
+  "repository": "https://github.com/tamnguyenvan/plan-review",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "plan-review",
+    "visualization",
+    "html",
+    "mermaid",
+    "ascii",
+    "wireframe",
+    "ux"
+  ]
+}

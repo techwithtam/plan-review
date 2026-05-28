@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-view="full" data-plain-english="on">
+<html lang="en" data-view="full" data-plain-english="on" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,8 +38,8 @@
     --state-pe: rgba(14, 116, 144, 0.06);
     --state-pe-border: rgba(14, 116, 144, 0.4);
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
+  /* Dark theme: opt-in only via data-theme="dark". No prefers-color-scheme. */
+  html[data-theme="dark"] {
       --bg: #0b1220;
       --surface: #131c2e;
       --surface-elevated: #182238;
@@ -54,7 +54,6 @@
       --state-gap: #f87171;
       --state-pe: rgba(34, 211, 238, 0.08);
       --state-pe-border: rgba(34, 211, 238, 0.4);
-    }
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -575,6 +574,17 @@
     b.addEventListener('click', () => setView(b.dataset.viewBtn));
   });
   setView(localStorage.getItem('plan-review.view') || 'full');
+
+  // Theme toggle (light is the default; dark is opt-in via this button)
+  const setTheme = (t) => {
+    document.documentElement.setAttribute('data-theme', t);
+    localStorage.setItem('plan-review.theme', t);
+  };
+  document.querySelector('.pr-theme-toggle').addEventListener('click', () => {
+    const cur = document.documentElement.getAttribute('data-theme') || 'light';
+    setTheme(cur === 'dark' ? 'light' : 'dark');
+  });
+  setTheme(localStorage.getItem('plan-review.theme') || 'light');
 
   // Plain English toggle
   const setPE = (state) => {

@@ -102,7 +102,7 @@ Define both light and dark in `:root` and `@media (prefers-color-scheme: dark)`.
 - View switcher between Full review and UX Flows works, state persists in localStorage.
 - Plain English toggle hides/shows all callouts, state persists in localStorage.
 - Every `[UX]` change has a before/after ASCII mockup inline AND appears in the UX Flows aggregate view.
-- Light mode default, dark mode via `prefers-color-scheme`.
+- **Light mode is the default, always.** Set `data-theme="light"` on `<html>` at page load. Never use `prefers-color-scheme` — plan reviews are shared documents and the default must be deterministic. Dark mode is opt-in only via the header theme toggle, wired up to flip `data-theme` and persist in localStorage.
 - No text smaller than 14px. Body text 16px+.
 - Constrained aesthetic applied, fonts and palette differ from recent runs.
 - All claims about the codebase verified during the fact-sheet step. Unverifiable claims explicitly flagged.

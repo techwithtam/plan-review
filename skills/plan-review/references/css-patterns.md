@@ -32,8 +32,11 @@ Reusable patterns for the plan-review page. Inline all CSS in `<style>`. Two the
   --state-pe-border: rgba(8, 145, 178, 0.25);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
+/* Dark theme: opt-in only, via data-theme="dark" on <html>.
+   DO NOT use prefers-color-scheme media query. Plan reviews are documents
+   that get shared; the default must be deterministic and light. Users who
+   want dark can flip the theme toggle (state persists in localStorage). */
+html[data-theme="dark"] {
     --bg: #0d1117;
     --surface: #161b22;
     --surface-elevated: #1c2333;
@@ -53,9 +56,28 @@ Reusable patterns for the plan-review page. Inline all CSS in `<style>`. Two the
     --state-gap-dim: rgba(248, 113, 113, 0.12);
     --state-pe: rgba(34, 211, 238, 0.08);
     --state-pe-border: rgba(34, 211, 238, 0.3);
-  }
 }
 ```
+
+## Theme toggle wiring
+
+The header theme button must actually work. Inline this JS:
+
+```js
+const setTheme = (t) => {
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('plan-review.theme', t);
+};
+document.querySelector('.pr-theme-toggle').addEventListener('click', () => {
+  const cur = document.documentElement.getAttribute('data-theme') || 'light';
+  setTheme(cur === 'dark' ? 'light' : 'dark');
+});
+setTheme(localStorage.getItem('plan-review.theme') || 'light');
+```
+
+The page must boot in light mode unless the user previously toggled to dark on
+this exact page (localStorage is per-file URL on the file:// scheme, so each
+generated review starts fresh as light).
 
 ## Recommended font pairings
 

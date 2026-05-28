@@ -6,7 +6,7 @@ Complete spec for the plan-review document shell. One self-contained `.html` fil
 
 ```html
 <!DOCTYPE html>
-<html lang="en" data-theme="auto" data-view="full" data-plain-english="on">
+<html lang="en" data-theme="light" data-view="full" data-plain-english="on">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -246,6 +246,8 @@ const STORE = {
   theme:'plan-review.theme'          // 'light' | 'dark' | 'auto'
 };
 ```
+
+**Theme defaults to light. Always.** Set `data-theme="light"` on `<html>` at page load. Do NOT use `@media (prefers-color-scheme: dark)` — plan reviews are documents that get shared, and the default must be deterministic regardless of OS theme. Dark mode is opt-in only, via the header theme button. Persist in localStorage so the user's choice survives reloads on the same file URL.
 
 View switcher toggles `<html data-view>`. CSS uses attribute selectors:
 ```css

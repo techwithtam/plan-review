@@ -2,54 +2,55 @@
 
 > A Claude Code skill that turns any implementation plan into a visual, code-grounded review you can actually read.
 
-Drop in a plan (RFC, spec, design doc) and your codebase. `/plan-review` generates a self-contained HTML page that compares the two side-by-side. Where the plan is right, where it's wrong, what could break, and what the trade-offs actually mean in plain English.
+When you give Claude Code a plan (an RFC, a spec, a design doc, a `/plan` output), what comes back is usually a wall of file paths, function names, and architecture jargon. You read it, you nod, you say "looks good," and then halfway through implementation you realize there were three things in there you didn't actually understand. Or worse, the plan referenced behavior in the code that turned out to be wrong.
 
-Two things make this different from a generic plan visualizer:
+`/plan-review` runs the plan through a structured review and gives you back a single HTML page that puts everything side by side. You learn what's changing, what could break, what the trade-offs really mean, and where the plan is making claims that don't match the code.
 
-1. **ASCII UI mockups.** Every change that touches user-facing code gets tagged `[UX]` and rendered as a before/after wireframe — inline with the code diff, plus an aggregated *UX Flows* view that groups every screen the plan touches.
-2. **Plain English layer.** Every jargon-heavy section gets a callout that translates the technical content into the trade-off it represents. One header toggle hides or shows all of them.
+## What it does
 
----
+You point the command at a plan file:
 
-## What you get
+```
+/plan-review path/to/your-plan.md
+```
 
-One `.html` file. No external dependencies (except Mermaid + Google Fonts via CDN). Opens in any browser.
+It reads the plan in full. Then it reads every file the plan references, plus the files that import or depend on those files, plus the tests. It cross-references everything: if the plan says "the `createSession` function does X today," it actually opens `createSession` and checks. If something doesn't match, it flags it.
 
-The page has nine sections:
+Then it writes a self-contained HTML page to `~/.agent/diagrams/` and opens it in your browser. One file. No build step. Mermaid and Google Fonts load from a CDN, but everything else is inline.
 
-1. **Plan summary** — the intuition, the scope, plain-English overview.
-2. **Impact dashboard** — files modified, created, deleted, lines changed, completeness indicators for tests/docs/rollback, phase pills if the plan has waves.
-3. **Current architecture** — Mermaid diagram of how the affected subsystem works today.
-4. **Planned architecture** — same diagram after the plan lands, with new/removed/changed nodes visually called out.
-5. **Change-by-change breakdown** — side-by-side code, plain-English callout per change, before/after ASCII mockup if the change touches UX, rationale (or a `⚑ missing rationale` flag if the plan doesn't say *why*).
-6. **Ripple analysis** — callers, importers, downstream effects. Color-coded by whether the plan addresses them.
-7. **Risk assessment** — edge cases, assumptions, ordering risks, rollback complexity, cognitive complexity. Each with severity.
-8. **Good / Bad / Ugly / Questions** — structured critique of the plan itself.
-9. **Understanding gaps** — rationale coverage bar, cognitive debt list, explicit "do this before implementing" recommendations.
+## What's in the page
 
-And two views switched from the header:
+Nine sections in the **Full review** view:
 
-- **Full review** — the nine sections above.
-- **UX Flows** — every screen the plan touches, aggregated. Before/after ASCII mockups, "what changes for the user" bullets, backlinks to the originating code changes.
+1. **Plan summary.** The intuition behind the plan, the scope (files touched, lines added/removed, new tests planned), and a Plain English overview at the top.
+2. **Impact dashboard.** Counts of files modified, created, deleted, lines changed. Completeness indicators for tests, docs, and rollback. If the plan defines waves or phases, you see them as status pills.
+3. **Current architecture.** A Mermaid diagram of how the affected subsystem works today. Only the parts the plan touches.
+4. **Planned architecture.** Same diagram after the plan lands. New nodes glow green, removed nodes fade out, changed edges shift color. Same node names and layout as section 3 so the diff is visually obvious.
+5. **Change-by-change breakdown.** Each proposed change as its own panel: current code on the left, planned code on the right, a Plain English callout explaining the trade-off, an ASCII UI mockup if the change touches user-facing code, and the rationale pulled from the plan. If the plan says what to do but never explains why, you see a `⚑ missing rationale` flag.
+6. **Ripple analysis.** Every caller, importer, and downstream dependency. Color-coded by whether the plan addresses it, mentions it in passing, or misses it entirely.
+7. **Risk assessment.** Edge cases, assumptions, ordering risks, rollback complexity, cognitive complexity. Each with a severity indicator.
+8. **Good, Bad, Ugly, Questions.** A structured critique of the plan itself. Things it gets right. Gaps. Subtle concerns that will bite later. Ambiguities to clarify with the author before you start.
+9. **Understanding gaps.** A closing dashboard showing rationale coverage as a progress bar, a list of cognitive debt flags, and an explicit "before you implement, document X and Y" recommendation.
 
----
+And a second view, switched from the header:
 
-## Why this exists
+**UX Flows.** Every screen the plan touches, aggregated. Before/after ASCII mockups side by side. A "what changes for the user" bullet list per screen. Backlinks to the code changes that touch each screen. Useful when the person reviewing the plan cares more about the user experience than the implementation.
 
-Most plan reviews die one of two deaths:
+## What makes it useful
 
-- **Too technical.** The plan is full of file paths and function signatures, and the reviewer skims because nothing tells them *what's actually at stake*.
-- **Too hand-wavy.** A high-level summary that ignores what the code actually does today, so claims about "current behavior" turn out to be wrong.
+Three things, specifically.
 
-This skill threads the needle. It reads the plan, reads the real code, cross-references the two, surfaces gaps — and presents the result with a Plain English layer for the non-engineer in the room and ASCII mockups for anyone who needs to see the user-facing impact.
+**It reads the actual code.** The whole review is grounded in what's in your repo right now. Before generating the page, the skill produces an internal fact sheet citing every claim against either a plan section or a `file:line` in the codebase. If a claim can't be verified, it's marked uncertain rather than presented as fact. So you don't get a confident, beautifully-styled page that turns out to be wrong about what the code does today.
 
----
+**ASCII UI mockups for UX changes.** Whenever a change touches a route, page component, form, or anything user-facing, the page tags it `[UX]` and renders a before/after wireframe in box-drawing characters right next to the code diff. Then the UX Flows view aggregates every mockup by screen. So a non-engineer (a PM, a designer, a stakeholder) can look at the same page and understand what the user is about to experience, without reading a single line of code.
+
+**A Plain English layer that you can toggle.** Every jargon-heavy section gets a callout that translates the technical content into the trade-off it represents. Lead sentence is always the trade-off, never the implementation: "Switching from cookies to JWTs. Means logins work across subdomains without extra setup, but harder to revoke a stolen token." One switch in the header turns every callout on or off at once, with the state saved across visits.
 
 ## Install
 
-This is a Claude Code skill. It's also packaged as a plugin so it can be installed via the marketplace flow.
+This is a Claude Code skill. It's also packaged as a plugin so it can be installed via the local marketplace flow.
 
-### Option 1 — Clone and symlink (fastest)
+### Option 1: Clone and symlink
 
 ```bash
 git clone https://github.com/techwithtam/plan-review.git ~/plan-review
@@ -59,9 +60,9 @@ ln -s ~/plan-review/commands/plan-review.md ~/.claude/commands/plan-review.md
 
 That's it. The `/plan-review` command and the `plan-review` skill are now available in any Claude Code session.
 
-### Option 2 — Local plugin marketplace
+### Option 2: Local plugin marketplace
 
-Add to your `~/.claude/settings.json`:
+Add this to your `~/.claude/settings.json`:
 
 ```json
 {
@@ -76,33 +77,27 @@ Add to your `~/.claude/settings.json`:
 }
 ```
 
----
-
 ## Usage
-
-In any Claude Code session, point the command at a plan file:
 
 ```
 /plan-review path/to/your-plan.md
 ```
 
-Optionally pass a codebase root if the plan is for a different repo:
+If the plan is for a different repo, pass the codebase root as a second argument:
 
 ```
 /plan-review path/to/your-plan.md path/to/codebase
 ```
 
-The skill:
+Here's what happens, step by step:
 
-1. Reads the plan in full.
-2. Reads every file the plan references, plus their importers and tests.
-3. Maps the blast radius — what else depends on the changing code.
-4. Tags every UX-touching change with `[UX]` and sketches before/after ASCII mockups for each.
-5. Writes a structured fact sheet to cross-check every claim against the real code.
-6. Generates the HTML page in one of four constrained aesthetics (Blueprint, Editorial, Paper/ink, or Monochrome terminal — varied per run).
-7. Writes to `~/.agent/diagrams/<project>-plan-review-<timestamp>.html` and opens it in your browser.
-
----
+1. The skill reads the plan in full.
+2. It reads every file the plan references, plus their importers and tests.
+3. It maps the blast radius. What else in the code depends on the files about to change.
+4. It tags every UX-touching change with `[UX]` and sketches a before/after ASCII mockup for each.
+5. It produces a structured fact sheet to verify every claim against the real code.
+6. It picks one of four constrained visual aesthetics (Blueprint, Editorial, Paper/ink, or Monochrome terminal) and varies the choice from run to run so the output never looks generic.
+7. It writes the HTML to `~/.agent/diagrams/<project>-plan-review-<timestamp>.html` and opens it in your browser.
 
 ## Folder layout
 
@@ -128,30 +123,21 @@ plan-review/
 └── package.json
 ```
 
-Fully self-contained. No dependency on `cc-viz` or any other skill.
-
----
+Fully self-contained. No dependency on any other skill.
 
 ## Customizing
 
-Two things you'll want to tune as you use it:
+Two things you'll want to tune as you use it.
 
-- **Aesthetic.** Edit `skills/plan-review/SKILL.md` to drop aesthetics you don't like or add your own. The forbidden colors list (Tailwind defaults, neon dashboard, gradient mesh) is also in there.
-- **Plain English voice.** `skills/plan-review/references/plain-english.md` defines the voice rules. Replace the example translations with terms specific to your domain — the more domain-specific the substitution list, the better the callouts read.
+**Aesthetic.** Edit `skills/plan-review/SKILL.md` to drop aesthetics you don't like or add your own. The forbidden colors list (Tailwind defaults, neon dashboard, gradient mesh) is also in there. Adjust it to taste.
 
----
+**Plain English voice.** `skills/plan-review/references/plain-english.md` defines the voice rules. The included substitution list (replace "endpoint" with "URL," replace "middleware" with "code that runs before/after every request," and so on) is generic by design. Replace it with terms specific to your domain. The more domain-aware the substitutions, the better the callouts read for your team.
 
 ## Credit
 
-The plan-review concept and several patterns (constrained aesthetics, Mermaid theming, current-vs-planned diff layout) originated in [cc-viz](https://github.com/zm2231/cc-viz) by Zain Merchant. This skill extends that lineage with three additions:
+The original `/plan-review` command and several of the patterns reused here (constrained aesthetics, Mermaid theming, the current-vs-planned diff layout) come from [cc-viz](https://github.com/zm2231/cc-viz) by Zain Merchant. This skill builds on that foundation and adds three things: the ASCII UI mockup layer with its dedicated UX Flows view, the Plain English translation layer with a header toggle, and the `[UX]` tagging heuristics in the data-gathering phase.
 
-- ASCII UI mockup layer (inline + aggregated UX Flows view)
-- Plain English translation layer with header toggle
-- `[UX]` tagging heuristics during data gathering
-
-If you want a broader visualization toolkit covering diff reviews, project recaps, slide decks, and architecture diagrams, install cc-viz alongside this skill.
-
----
+If you want a broader visualization toolkit (diff reviews, project recaps, slide decks, generic architecture diagrams), install cc-viz alongside this skill. They're designed to coexist.
 
 ## License
 
